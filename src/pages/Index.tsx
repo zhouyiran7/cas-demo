@@ -2,7 +2,9 @@
 import React from 'react';
 import Carousel from '@/components/Carousel';
 import { carouselImages } from '@/data/carouselData';
-import { Github } from 'lucide-react';
+import { Github, ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 const Index = () => {
   return (
@@ -25,6 +27,14 @@ const Index = () => {
             进行开发
           </p>
         </header>
+        
+        <div className="mb-8 text-center">
+          <Button asChild className="flex items-center gap-2">
+            <Link to="/">
+              查看 CAS 单点登录演示 <ExternalLink size={16} />
+            </Link>
+          </Button>
+        </div>
         
         <main>
           <section className="mb-16">
