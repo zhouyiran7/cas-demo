@@ -4,12 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Mail } from 'lucide-react';
 
 const MainSite = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [username, setUsername] = useState('');
   const [searchParams] = useSearchParams();
+  const [serviceTicket, setServiceTicket] = useState<string | null>(null);
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -23,8 +24,8 @@ const MainSite = () => {
       localStorage.setItem('main_site_authenticated', 'true');
       localStorage.setItem('main_site_ticket', ticket);
       
-      // Set global CAS authentication
-      localStorage.setItem('cas_authenticated', 'true');
+      // Set the service ticket for display
+      setServiceTicket(ticket);
       
       // Read username from localStorage (set by CAS service)
       const casUsername = localStorage.getItem('cas_username');
@@ -41,7 +42,7 @@ const MainSite = () => {
       
       toast({
         title: "验证成功",
-        description: `欢迎回来，${casUsername || '用户'}！`,
+        description: `欢迎回来，${casUsername || '用户'}！服务票据 (ST) 已验证。`,
       });
     } else {
       // Check if we have authentication in localStorage
@@ -51,10 +52,6 @@ const MainSite = () => {
       if ((storedAuth === 'true') && storedUsername) {
         setIsAuthenticated(true);
         setUsername(storedUsername);
-        
-        // Ensure CAS authentication is also set
-        localStorage.setItem('cas_authenticated', 'true');
-        localStorage.setItem('cas_username', storedUsername);
       }
     }
   }, [searchParams, navigate]);
@@ -73,11 +70,14 @@ const MainSite = () => {
     localStorage.removeItem('main_site_username');
     localStorage.removeItem('cas_authenticated');
     localStorage.removeItem('cas_username');
+    localStorage.removeItem('cas_tgt');
+    localStorage.removeItem('cas_service_tickets');
     setIsAuthenticated(false);
+    setServiceTicket(null);
     
     toast({
       title: "已退出登录",
-      description: "您已成功退出当前账号",
+      description: "您已成功退出当前账号，TGT已销毁",
     });
   };
   
@@ -114,11 +114,17 @@ const MainSite = () => {
                   <p className="text-green-700">
                     欢迎回来，{username}！
                   </p>
+                  {serviceTicket && (
+                    <div className="mt-2 p-2 bg-white rounded border border-green-100 text-xs font-mono">
+                      <p className="text-gray-600">服务票据 (ST): {serviceTicket}</p>
+                      <p className="text-gray-500 text-xs mt-1">此票据已被验证并消费</p>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="flex flex-col gap-4 md:flex-row md:items-center">
                   <Button onClick={goToMailSite} className="flex items-center gap-2">
-                    访问邮件系统 <ExternalLink size={16} />
+                    <Mail size={16} /> 访问邮件系统
                   </Button>
                   <Button variant="outline" onClick={handleLogout}>
                     退出登录
@@ -153,11 +159,10 @@ const MainSite = () => {
           <ol className="list-decimal pl-5 space-y-2">
             <li>用户访问需要身份验证的服务（如主站或邮件系统）</li>
             <li>服务将用户重定向至中央CAS服务器，并附上自己的URL作为参数</li>
-            <li>用户在CAS服务器上进行身份验证（如尚未登录）</li>
-            <li>验证成功后，CAS重定向用户回原服务，并附上验证票据（ticket）</li>
+            <li>用户在CAS服务器上进行身份验证，成功后CAS服务器创建<strong>TGT</strong>并发送<strong>TGC</strong>给浏览器</li>
+            <li>CAS使用TGT生成<strong>服务票据(ST)</strong>并重定向用户回原服务</li>
             <li>服务使用该票据向CAS服务器验证用户身份</li>
-            <li>验证成功后，用户可以访问该服务</li>
-            <li>用户访问另一个服务时，由于已在CAS中登录，可以直接获得票据并访问</li>
+            <li>用户访问另一个服务时，CAS检测到用户已有<strong>TGC</strong>，可直接颁发新的<strong>ST</strong></li>
           </ol>
         </div>
       </div>
