@@ -1,10 +1,10 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
-import { ExternalLink, Mail } from 'lucide-react';
+import { ExternalLink, Mail, FileText } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const MainSite = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -14,20 +14,15 @@ const MainSite = () => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check if there's a ticket in the URL (returning from CAS)
     const ticket = searchParams.get('ticket');
     
     if (ticket) {
-      // In a real app, we would validate the ticket with the CAS server here
-      // For this demo, we'll just accept any ticket as valid
       console.log('Received ticket:', ticket);
       localStorage.setItem('main_site_authenticated', 'true');
       localStorage.setItem('main_site_ticket', ticket);
       
-      // Set the service ticket for display
       setServiceTicket(ticket);
       
-      // Read username from localStorage (set by CAS service)
       const casUsername = localStorage.getItem('cas_username');
       if (casUsername) {
         setUsername(casUsername);
@@ -36,7 +31,6 @@ const MainSite = () => {
       
       setIsAuthenticated(true);
       
-      // Clean up the URL to remove the ticket
       const newUrl = window.location.pathname;
       navigate(newUrl);
       
@@ -45,7 +39,6 @@ const MainSite = () => {
         description: `欢迎回来，${casUsername || '用户'}！服务票据 (ST) 已验证。`,
       });
     } else {
-      // Check if we have authentication in localStorage
       const storedAuth = localStorage.getItem('main_site_authenticated') || localStorage.getItem('cas_authenticated');
       const storedUsername = localStorage.getItem('main_site_username') || localStorage.getItem('cas_username');
       
@@ -57,14 +50,11 @@ const MainSite = () => {
   }, [searchParams, navigate]);
 
   const handleLogin = () => {
-    // Redirect to CAS service
     const currentUrl = window.location.href;
-    // In a real app, you would use your actual CAS server URL
     window.location.href = `/cas?service=${encodeURIComponent(currentUrl)}`;
   };
   
   const handleLogout = () => {
-    // Clear authentication
     localStorage.removeItem('main_site_authenticated');
     localStorage.removeItem('main_site_ticket');
     localStorage.removeItem('main_site_username');
@@ -82,8 +72,6 @@ const MainSite = () => {
   };
   
   const goToMailSite = () => {
-    // Navigate to the mail subdomain
-    // In a real app, this would use a different domain
     navigate('/mail');
   };
 
@@ -129,6 +117,11 @@ const MainSite = () => {
                   <Button variant="outline" onClick={handleLogout}>
                     退出登录
                   </Button>
+                  <Button variant="secondary" asChild className="flex items-center gap-2">
+                    <Link to="/docs">
+                      <FileText size={16} /> 查看文档
+                    </Link>
+                  </Button>
                 </div>
               </div>
             ) : (
@@ -141,9 +134,16 @@ const MainSite = () => {
                     请点击按钮进行CAS登录
                   </p>
                 </div>
-                <Button onClick={handleLogin}>
-                  CAS登录
-                </Button>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center">
+                  <Button onClick={handleLogin}>
+                    CAS登录
+                  </Button>
+                  <Button variant="secondary" asChild className="flex items-center gap-2">
+                    <Link to="/docs">
+                      <FileText size={16} /> 查看文档
+                    </Link>
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>

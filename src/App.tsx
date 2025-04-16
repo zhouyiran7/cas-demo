@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import MainSite from "./pages/MainSite";
 import MailSite from "./pages/MailSite";
 import CasService from "./pages/CasService";
+import Documentation from "./pages/Documentation";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/demo" element={<Index />} />
           <Route path="/mail" element={<MailSite />} />
           <Route path="/cas" element={<CasService />} />
+          <Route path="/docs" element={<Documentation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
