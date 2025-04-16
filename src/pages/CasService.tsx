@@ -18,6 +18,29 @@ const CasService = () => {
   // Get the service URL that requested authentication
   const serviceUrl = searchParams.get('service') || '/';
   
+  // Check if user is already authenticated in CAS
+  useEffect(() => {
+    const casAuthenticated = localStorage.getItem('cas_authenticated');
+    const casUsername = localStorage.getItem('cas_username');
+    
+    if (casAuthenticated === 'true' && casUsername && serviceUrl) {
+      // User is already authenticated, generate a ticket and redirect back
+      const ticket = `ST-${Math.random().toString(36).substring(2, 15)}`;
+      const redirectUrl = new URL(serviceUrl);
+      redirectUrl.searchParams.append('ticket', ticket);
+      
+      toast({
+        title: "已登录",
+        description: "您已登录，正在跳转回原始服务...",
+      });
+      
+      // Short delay for toast to be visible
+      setTimeout(() => {
+        window.location.href = redirectUrl.toString();
+      }, 500);
+    }
+  }, [serviceUrl]);
+  
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

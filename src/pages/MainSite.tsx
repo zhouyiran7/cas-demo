@@ -23,6 +23,9 @@ const MainSite = () => {
       localStorage.setItem('main_site_authenticated', 'true');
       localStorage.setItem('main_site_ticket', ticket);
       
+      // Set global CAS authentication
+      localStorage.setItem('cas_authenticated', 'true');
+      
       // Read username from localStorage (set by CAS service)
       const casUsername = localStorage.getItem('cas_username');
       if (casUsername) {
@@ -42,12 +45,16 @@ const MainSite = () => {
       });
     } else {
       // Check if we have authentication in localStorage
-      const storedAuth = localStorage.getItem('main_site_authenticated');
-      const storedUsername = localStorage.getItem('main_site_username');
+      const storedAuth = localStorage.getItem('main_site_authenticated') || localStorage.getItem('cas_authenticated');
+      const storedUsername = localStorage.getItem('main_site_username') || localStorage.getItem('cas_username');
       
-      if (storedAuth === 'true' && storedUsername) {
+      if ((storedAuth === 'true') && storedUsername) {
         setIsAuthenticated(true);
         setUsername(storedUsername);
+        
+        // Ensure CAS authentication is also set
+        localStorage.setItem('cas_authenticated', 'true');
+        localStorage.setItem('cas_username', storedUsername);
       }
     }
   }, [searchParams, navigate]);

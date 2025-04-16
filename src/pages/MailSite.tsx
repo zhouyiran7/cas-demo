@@ -17,6 +17,20 @@ const MailSite = () => {
     // Check if there's a ticket in the URL (returning from CAS)
     const ticket = searchParams.get('ticket');
     
+    // First check if the user is already authenticated in CAS
+    const casAuthenticated = localStorage.getItem('cas_authenticated');
+    const casUsername = localStorage.getItem('cas_username');
+    
+    if (casAuthenticated === 'true' && casUsername) {
+      console.log('User already authenticated in CAS, using existing session');
+      setIsAuthenticated(true);
+      setUsername(casUsername);
+      localStorage.setItem('mail_site_authenticated', 'true');
+      localStorage.setItem('mail_site_username', casUsername);
+      generateFakeEmails(casUsername);
+      return;
+    }
+    
     if (ticket) {
       // In a real app, we would validate the ticket with the CAS server here
       // For this demo, we'll just accept any ticket as valid
@@ -25,7 +39,6 @@ const MailSite = () => {
       localStorage.setItem('mail_site_ticket', ticket);
       
       // Read username from localStorage (set by CAS service)
-      const casUsername = localStorage.getItem('cas_username');
       if (casUsername) {
         setUsername(casUsername);
         localStorage.setItem('mail_site_username', casUsername);
